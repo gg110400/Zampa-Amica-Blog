@@ -6,6 +6,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   token: { type: String },
   subscribedToBlog: { type: Boolean, default: false },
+  avatar: {
+    type: String, // URL o path dell'avatar
+  },
   googleId: String,
   profilePicture: String,
   role: { type: String, enum: ['User', 'Admin'], default: 'User' },

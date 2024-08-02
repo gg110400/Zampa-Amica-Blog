@@ -22,11 +22,15 @@ export const registerUser = async (userData) => {
   }
 };
 
+
 export const loginUser = async (credentials) => {
   try {
     const response = await axios.post(`${BASE_URL}/users/login`, credentials);
     if (response.data.token) {
       localStorage.setItem('authToken', response.data.token);
+    }
+    if (response.data.role) {
+      localStorage.setItem('userRole', response.data.role);
     }
     return response.data;
   } catch (error) {
@@ -34,6 +38,8 @@ export const loginUser = async (credentials) => {
     throw error;
   }
 };
+
+
 
 export const getUserProfile = async () => {
   try {
@@ -72,17 +78,32 @@ export const deleteUser = async () => {
   }
 };
 
-export const toggleBlogSubscription = async () => {
-  try {
-    const response = await axios.post(`${BASE_URL}/users/toggle-blog-subscription`, null, {
-      headers: getAuthHeader()
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Errore nel cambiare lo stato di iscrizione al blog:', error);
-    throw error;
-  }
-};
+export const toggleBlogSubscription = async (token) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/users/toggle-blog-subscription`, null, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Errore nel cambiare lo stato di iscrizione al blog:', error);
+      throw error;
+    }
+  };
+  
+  export const updateUserAvatar = async (formData) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/users/update-avatar`, formData, {
+        headers: { 
+          ...getAuthHeader(),
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Errore nell\'aggiornamento dell\'avatar:', error);
+      throw error;
+    }
+  };
 
 export const logoutUser = () => {
   localStorage.removeItem('authToken');
@@ -360,6 +381,7 @@ const api = {
   loginUser,
   getUserProfile,
   updateUserProfile,
+  updateUserAvatar,
   deleteUser,
   toggleBlogSubscription,
   logoutUser,

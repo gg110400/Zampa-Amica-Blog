@@ -17,6 +17,7 @@ import EventDetail from './pages/EventDetail.jsx';
 import HowToHelp from './pages/HowToHelp.jsx';
 import BlogDetail from './pages/BlogDetail.jsx';
 import About from './pages/About.jsx';
+import Profile from './pages/Profile.jsx';
 
 const App = () => {
   return (
@@ -38,6 +39,7 @@ const App = () => {
         <Route path="/event/:id" element={<EventDetail/>} />
         <Route path='/volunteer' element={<HowToHelp/>} />
         <Route path='/about' element={<About/>} />
+        <Route path='/profile' element={<Profile/>} />
       </Routes>
       <Footer/>
     </>

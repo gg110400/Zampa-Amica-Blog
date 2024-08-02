@@ -6,10 +6,13 @@ import {
   getUserProfile, 
   updateUserProfile, 
   deleteUser,
-  toggleBlogSubscription
+  toggleBlogSubscription,
+  updateUserAvatar,
+  setAdminRole
 } from '../controllers/userController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import { generateToken } from '../utils/authUtils.js';
+import upload from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
@@ -22,6 +25,8 @@ router.get('/profile', authMiddleware, getUserProfile);
 router.put('/profile', authMiddleware, updateUserProfile);
 router.delete('/', authMiddleware, deleteUser);
 router.post('/toggle-blog-subscription', authMiddleware, toggleBlogSubscription);
+router.post('/update-avatar', authMiddleware, upload.single('avatar'), updateUserAvatar);
+router.post('/set-admin', authMiddleware, setAdminRole);
 
 // Rotte per l'autenticazione Google
 router.get('/auth/google',

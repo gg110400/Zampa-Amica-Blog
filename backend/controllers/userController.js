@@ -51,30 +51,58 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
+export const updateUserAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw new BadRequestError('Nessun file caricato');
+    }
+
+    const avatarUrl = `/uploads/${req.file.filename}`;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: { avatar: avatarUrl } },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      throw new NotFoundError('Utente non trovato');
+    }
+
+    res.json({ user, token: user.token });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // Other functions remain the same
 
 export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
       throw new UnauthorizedError('Invalid credentials');
     }
-
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new UnauthorizedError('Invalid credentials');
     }
+    
+    // Controlla se l'email corrisponde all'email dell'admin
+    if (email === 'giuliagiudici120@gmail.com' && user.role !== 'Admin') {
+      user.role = 'Admin';
+      await user.save();
+    }
 
-    // Return the existing token
-    res.json({ token: user.token });
+    res.json({ token: user.token, role: user.role });
   } catch (error) {
     next(error);
   }
 };
+
+
 
 export const getUserProfile = async (req, res, next) => {
   try {
@@ -82,7 +110,7 @@ export const getUserProfile = async (req, res, next) => {
     if (!user) {
       throw new NotFoundError('User not found');
     }
-    res.json({ user, token: user.token });
+    res.json({ user: { ...user.toObject(), role: user.role } });
   } catch (error) {
     next(error);
   }
@@ -135,6 +163,26 @@ export const toggleBlogSubscription = async (req, res, next) => {
       message: user.subscribedToBlog ? 'Subscribed to blog notifications' : 'Unsubscribed from blog notifications',
       token: user.token
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const setAdminRole = async (req, res, next) => {
+  try {
+    const adminEmail = 'giuliagiudici120@gmail.com'; // Sostituisci con la tua email
+    const user = await User.findOneAndUpdate(
+      { email: adminEmail },
+      { role: 'admin' },
+      { new: true }
+    );
+
+    if (!user) {
+      throw new NotFoundError('Utente non trovato');
+    }
+
+    res.json({ message: 'Ruolo admin impostato con successo', user });
   } catch (error) {
     next(error);
   }

@@ -8,7 +8,8 @@ import {
   searchAnimals
 } from '../controllers/animalController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
-import upload from '../middleware/upload.js';
+import upload from '../middleware/uploadMiddleware.js';
+import adminMiddleware from '../middleware/adminMiddleware.js';
 
 const router = express.Router();
 
@@ -17,9 +18,10 @@ router.get('/', getAllAnimals);
 router.get('/search', searchAnimals);
 router.get('/:id', getAnimalById);
 
+
 // Protected routes
-router.post('/', authMiddleware, upload.single('image'), createAnimal);
-router.put('/:id', authMiddleware, upload.single('image'), updateAnimal);
-router.delete('/:id', authMiddleware, deleteAnimal);
+router.post('/', authMiddleware, adminMiddleware, upload.single('image'), createAnimal);
+router.put('/:id', authMiddleware, adminMiddleware, upload.single('image'), updateAnimal);
+router.delete('/:id', authMiddleware, adminMiddleware, deleteAnimal);
 
 export default router;

@@ -1,10 +1,29 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaw, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faPaw, faBars, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import api from '../services/api'; // Assicurati che il percorso sia corretto
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Controlla se l'utente è autenticato (ad esempio, se c'è un token nel localStorage)
+    const token = localStorage.getItem('authToken');
+    setIsAuthenticated(!!token);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await api.logoutUser();
+      setIsAuthenticated(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Errore durante il logout:', error);
+    }
+  };
 
   return (
     <header className="bg-gradient-to-r from-orange-400 via-red-400 to-pink-500 text-white shadow-lg">
@@ -30,12 +49,27 @@ const Header = () => {
 
           {/* Pulsanti a destra */}
           <div className="hidden md:flex items-center space-x-2">
-            <Link to="/login" className="bg-white text-gray-800 font-bold py-2 px-4 rounded shadow-md transition duration-300 hover:bg-gray-100">
-              Accedi
-            </Link>
-            <Link to="/register" className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded shadow-md transition duration-300">
-              Iscriviti
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link to="/profile" className="bg-white text-gray-800 font-bold py-2 px-4 rounded shadow-md transition duration-300 hover:bg-gray-100">
+                  <FontAwesomeIcon icon={faUser} className="mr-2" />
+                  Profilo
+                </Link>
+                <button onClick={handleLogout} className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded shadow-md transition duration-300">
+                  <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="bg-white text-gray-800 font-bold py-2 px-4 rounded shadow-md transition duration-300 hover:bg-gray-100">
+                  Accedi
+                </Link>
+                <Link to="/register" className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded shadow-md transition duration-300">
+                  Iscriviti
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Pulsante menu per schermi piccoli */}
@@ -56,8 +90,17 @@ const Header = () => {
             <Link to="/blog" className="font-poppins block hover:text-yellow-200 transition duration-300">Blog</Link>
             <Link to="/donate" className="font-poppins block hover:text-yellow-200 transition duration-300">Dona</Link>
             <Link to="/contact" className="font-poppins block hover:text-yellow-200 transition duration-300">Contatti</Link>
-            <Link to="/login" className="font-poppins block hover:text-yellow-200 transition duration-300">Accedi</Link>
-            <Link to="/register" className="font-poppins block hover:text-yellow-200 transition duration-300">Iscriviti</Link>
+            {isAuthenticated ? (
+              <>
+                <Link to="/profile" className="font-poppins block hover:text-yellow-200 transition duration-300">Profilo</Link>
+                <button onClick={handleLogout} className="font-poppins block hover:text-yellow-200 transition duration-300">Logout</button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="font-poppins block hover:text-yellow-200 transition duration-300">Accedi</Link>
+                <Link to="/register" className="font-poppins block hover:text-yellow-200 transition duration-300">Iscriviti</Link>
+              </>
+            )}
           </nav>
         )}
       </div>

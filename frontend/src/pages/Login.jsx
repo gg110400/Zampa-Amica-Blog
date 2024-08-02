@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api.js'; // Assicurati che il percorso sia corretto
+import api from '../services/api.js';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -26,6 +26,8 @@ const Login = () => {
     try {
       const response = await api.loginUser(credentials);
       console.log('Login completato:', response);
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('userRole', response.role);
       // Reindirizza alla home dopo il login
       navigate('/');
     } catch (error) {

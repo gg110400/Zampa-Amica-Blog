@@ -37,6 +37,7 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use('/uploads', express.static('uploads')); // Servi i file caricati
 app.use(passport.initialize());
 
 // Routes
