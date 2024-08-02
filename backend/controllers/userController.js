@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import { BadRequestError, UnauthorizedError, NotFoundError } from '../utils/errorTypes.js';
 import { sendWelcomeEmail } from '../utils/emailService.js';
 
+
 export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
@@ -12,6 +13,11 @@ export const registerUser = async (req, res, next) => {
     let user = await User.findOne({ email });
     if (user) {
       throw new BadRequestError('User already exists');
+    }
+
+    // Validate password
+    if (password.length < 6) {
+      throw new BadRequestError('Password must be at least 6 characters long');
     }
 
     // Hash password
@@ -25,19 +31,27 @@ export const registerUser = async (req, res, next) => {
       password: hashedPassword
     });
 
+    // Generate token
+    const token = jwt.sign({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    user.token = token;
+
     await user.save();
 
     // Send welcome email
-    sendWelcomeEmail(user).catch(error => console.error('Error sending welcome email:', error));
-
-    // Create and send token
-    const token = jwt.sign({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    try {
+      await sendWelcomeEmail(user);
+    } catch (emailError) {
+      console.error('Error sending welcome email:', emailError);
+      // Continue with registration even if email fails
+    }
 
     res.status(201).json({ token });
   } catch (error) {
     next(error);
   }
 };
+
+// Other functions remain the same
 
 export const loginUser = async (req, res, next) => {
   try {
@@ -55,10 +69,8 @@ export const loginUser = async (req, res, next) => {
       throw new UnauthorizedError('Invalid credentials');
     }
 
-    // Create and send token
-    const token = jwt.sign({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-    res.json({ token });
+    // Return the existing token
+    res.json({ token: user.token });
   } catch (error) {
     next(error);
   }
@@ -70,7 +82,7 @@ export const getUserProfile = async (req, res, next) => {
     if (!user) {
       throw new NotFoundError('User not found');
     }
-    res.json(user);
+    res.json({ user, token: user.token });
   } catch (error) {
     next(error);
   }
@@ -94,7 +106,7 @@ export const updateUserProfile = async (req, res, next) => {
       throw new NotFoundError('User not found');
     }
 
-    res.json(user);
+    res.json({ user, token: user.token });
   } catch (error) {
     next(error);
   }
@@ -119,7 +131,10 @@ export const toggleBlogSubscription = async (req, res, next) => {
     user.subscribedToBlog = !user.subscribedToBlog;
     await user.save();
 
-    res.json({ message: user.subscribedToBlog ? 'Subscribed to blog notifications' : 'Unsubscribed from blog notifications' });
+    res.json({ 
+      message: user.subscribedToBlog ? 'Subscribed to blog notifications' : 'Unsubscribed from blog notifications',
+      token: user.token
+    });
   } catch (error) {
     next(error);
   }

@@ -1,24 +1,30 @@
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 import { UnauthorizedError } from '../utils/errorTypes.js';
 
-const authMiddleware = (req, res, next) => {
-  // Get token from header
-  const token = req.header('x-auth-token');
-
-  // Check if no token
-  if (!token) {
-    return next(new UnauthorizedError('No token, authorization denied'));
-  }
-
+const authMiddleware = async (req, res, next) => {
   try {
-    // Verify token
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      throw new UnauthorizedError('No token provided');
+    }
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findOne({ _id: decoded.user.id, token: token });
 
-    // Add user from payload
-    req.user = decoded.user;
+    if (!user) {
+      throw new UnauthorizedError('User not found or token invalid');
+    }
+
+    req.token = token;
+    req.user = user;
     next();
-  } catch (err) {
-    next(new UnauthorizedError('Token is not valid'));
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      next(new UnauthorizedError('Invalid token'));
+    } else {
+      next(error);
+    }
   }
 };
 
