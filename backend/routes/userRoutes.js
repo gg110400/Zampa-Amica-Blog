@@ -36,25 +36,17 @@ router.post('/set-admin', authMiddleware, setAdminRole);
 
 console.log('Route file loaded');
 
+// Inizia l'autenticazione Google
 router.get('/auth/google',
-  (req, res, next) => {
-    console.log('Google authentication route accessed');
-    next();
-  },
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 // Callback dopo l'autenticazione Google
 router.get('/auth/google/callback',
-  (req, res, next) => {
-    console.log('Google callback route accessed');
-    next();
-  },
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', { failureRedirect: '/login', failureMessage: true }),
   (req, res) => {
-    console.log('Authentication successful, generating token');
+    console.log('Autenticazione Google riuscita');
     const token = generateToken(req.user);
-    console.log('Redirecting to:', `${process.env.FRONTEND_URL}/login?token=${token}`);
     res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
   }
 );
