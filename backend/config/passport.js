@@ -40,7 +40,12 @@ passport.use(new GoogleStrategy({
         });
       }
 
-      return done(null, user);
+       // Genera un token JWT per l'utente
+       const token = jwt.sign({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: '30d' });
+       user.token = token;
+       await user.save();
+
+       return done(null, { user, token });
     } catch (error) {
       return done(error, null);
     }

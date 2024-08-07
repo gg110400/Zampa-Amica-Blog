@@ -139,6 +139,11 @@ export const initiateGoogleAuth = () => {
 export const handleGoogleAuthCallback = (token) => {
   if (token) {
     localStorage.setItem('authToken', token);
+    // Decodifica il token per ottenere le informazioni dell'utente
+    const decodedToken = jwt_decode(token);
+    if (decodedToken.user && decodedToken.user.role) {
+      localStorage.setItem('userRole', decodedToken.user.role);
+    }
     return { success: true, message: 'Google authentication successful' };
   }
   return { success: false, message: 'No token received from Google authentication' };

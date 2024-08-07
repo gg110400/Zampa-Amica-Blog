@@ -41,12 +41,10 @@ router.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-// Callback dopo l'autenticazione Google
 router.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login', failureMessage: true }),
+  passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    console.log('Autenticazione Google riuscita');
-    const token = generateToken(req.user);
+    const token = req.user.token;
     res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
   }
 );
