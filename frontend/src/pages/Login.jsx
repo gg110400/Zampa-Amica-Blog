@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api.js';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Gestione del callback di Google
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get('token');
+    if (token) {
+      console.log('Token ricevuto da Google:', token);
+      localStorage.setItem('authToken', token);
+      // Qui potresti anche impostare il ruolo utente se necessario
+      navigate('/');
+    }
+  }, [location, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

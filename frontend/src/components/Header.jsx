@@ -1,23 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaw, faBars, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import api from '../services/api'; // Assicurati che il percorso sia corretto
+import api from '../services/api';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Controlla se l'utente è autenticato (ad esempio, se c'è un token nel localStorage)
-    const token = localStorage.getItem('authToken');
-    setIsAuthenticated(!!token);
-  }, []);
+    const checkAuth = () => {
+      const token = localStorage.getItem('authToken');
+      setIsAuthenticated(!!token);
+    };
+
+    checkAuth();
+    // Ricontrolla l'autenticazione quando cambia la location
+    window.addEventListener('storage', checkAuth);
+
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+    };
+  }, [location]);
 
   const handleLogout = async () => {
     try {
       await api.logoutUser();
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userRole');
       setIsAuthenticated(false);
       navigate('/');
     } catch (error) {
