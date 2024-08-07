@@ -5,7 +5,12 @@ const BASE_URL = 'http://localhost:3000/api';
 // Funzione di utilità per ottenere l'header di autorizzazione
 const getAuthHeader = () => {
   const token = localStorage.getItem('authToken');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  const role = localStorage.getItem('userRole');
+  console.log('Current user role:', role);
+  return token ? { 
+    Authorization: `Bearer ${token}`,
+    'User-Role': role
+  } : {};
 };
 
 // User API
@@ -49,6 +54,19 @@ export const getUserProfile = async () => {
     return response.data;
   } catch (error) {
     console.error('Errore nel recupero del profilo utente:', error);
+    throw error;
+  }
+};
+
+
+export const getUserRole = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/users/profile`, {
+      headers: getAuthHeader()
+    });
+    return response.data
+  } catch (error) {
+    console.error('Errore nel recupero del ruolo utente:', error);
     throw error;
   }
 };
@@ -111,7 +129,11 @@ export const logoutUser = () => {
 
 // Google Authentication
 export const initiateGoogleAuth = () => {
-  window.location.href = `${BASE_URL}/users/auth/google`;
+  try {
+    window.location.href = `${BASE_URL}/users/auth/google`;
+  } catch (error) {
+    console.error('Errore nell\'avvio dell\'autenticazione Google:', error);
+  }
 };
 
 export const handleGoogleAuthCallback = (token) => {
@@ -155,12 +177,20 @@ export const getAnimalById = async (id) => {
 
 export const createAnimal = async (animalData) => {
   try {
+    console.log('Sending animal data:', animalData);
+    console.log('Auth header:', getAuthHeader());
     const response = await axios.post(`${BASE_URL}/animals`, animalData, {
       headers: { ...getAuthHeader(), 'Content-Type': 'multipart/form-data' }
     });
+    console.log('Response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Errore nella creazione dell\'animale:', error);
+    console.error('Error in createAnimal:', error);
+    if (error.response) {
+      console.error('Error response:', error.response.data);
+      console.error('Error status:', error.response.status);
+      console.error('Error headers:', error.response.headers);
+    }
     throw error;
   }
 };
@@ -213,7 +243,10 @@ export const getPostById = async (id) => {
 export const createPost = async (postData) => {
   try {
     const response = await axios.post(`${BASE_URL}/blog`, postData, {
-      headers: getAuthHeader()
+      headers: { 
+        ...getAuthHeader(),
+        'Content-Type': 'multipart/form-data'
+      }
     });
     return response.data;
   } catch (error) {
@@ -330,7 +363,10 @@ export const getEventById = async (id) => {
 export const createEvent = async (eventData) => {
   try {
     const response = await axios.post(`${BASE_URL}/events`, eventData, {
-      headers: getAuthHeader()
+      headers: {
+        ...getAuthHeader(),
+        'Content-Type': 'multipart/form-data'  // Importante per l'upload di file
+      }
     });
     return response.data;
   } catch (error) {
@@ -383,6 +419,7 @@ const api = {
   updateUserProfile,
   updateUserAvatar,
   deleteUser,
+  getUserRole,
   toggleBlogSubscription,
   logoutUser,
   initiateGoogleAuth,

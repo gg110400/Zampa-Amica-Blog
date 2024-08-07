@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 import { BadRequestError, UnauthorizedError, NotFoundError } from '../utils/errorTypes.js';
 import { sendWelcomeEmail } from '../utils/emailService.js';
 
-
 export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
@@ -57,7 +56,7 @@ export const updateUserAvatar = async (req, res, next) => {
       throw new BadRequestError('Nessun file caricato');
     }
 
-    const avatarUrl = `/uploads/${req.file.filename}`;
+    const avatarUrl = req.file.path;
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
@@ -74,9 +73,6 @@ export const updateUserAvatar = async (req, res, next) => {
     next(error);
   }
 };
-
-
-// Other functions remain the same
 
 export const loginUser = async (req, res, next) => {
   try {
@@ -101,8 +97,6 @@ export const loginUser = async (req, res, next) => {
     next(error);
   }
 };
-
-
 
 export const getUserProfile = async (req, res, next) => {
   try {
@@ -167,7 +161,6 @@ export const toggleBlogSubscription = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const setAdminRole = async (req, res, next) => {
   try {

@@ -1,20 +1,24 @@
 import express from 'express';
 import passport from 'passport';
-import { 
-  registerUser, 
-  loginUser, 
-  getUserProfile, 
-  updateUserProfile, 
-  deleteUser,
-  toggleBlogSubscription,
-  updateUserAvatar,
-  setAdminRole
+import {
+   registerUser,
+   loginUser,
+   getUserProfile,
+   updateUserProfile,
+   deleteUser,
+   toggleBlogSubscription,
+   updateUserAvatar,
+   setAdminRole
 } from '../controllers/userController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import { generateToken } from '../utils/authUtils.js';
-import upload from '../middleware/uploadMiddleware.js';
+import { storage } from '../config/cloudinary.js';
+import multer from 'multer';
 
 const router = express.Router();
+
+// Configura multer con lo storage di Cloudinary
+const upload = multer({ storage: storage });
 
 // Rotte pubbliche
 router.post('/register', registerUser);
@@ -28,26 +32,30 @@ router.post('/toggle-blog-subscription', authMiddleware, toggleBlogSubscription)
 router.post('/update-avatar', authMiddleware, upload.single('avatar'), updateUserAvatar);
 router.post('/set-admin', authMiddleware, setAdminRole);
 
-// Rotte per l'autenticazione Google
+
+
+console.log('Route file loaded');
+
 router.get('/auth/google',
+  (req, res, next) => {
+    console.log('Google authentication route accessed');
+    next();
+  },
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-router.get('/auth/google/callback', 
+// Callback dopo l'autenticazione Google
+router.get('/auth/google/callback',
+  (req, res, next) => {
+    console.log('Google callback route accessed');
+    next();
+  },
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    // Assumiamo che req.user sia impostato da Passport dopo un'autenticazione riuscita
+    console.log('Authentication successful, generating token');
     const token = generateToken(req.user);
-    
-    // Salva il token nel documento utente
-    req.user.token = token;
-    req.user.save().then(() => {
-      // Reindirizza al frontend con il token
-      res.redirect(`${process.env.FRONTEND_URL}/login-success?token=${token}`);
-    }).catch(err => {
-      console.error('Errore nel salvare il token:', err);
-      res.redirect('/login');
-    });
+    console.log('Redirecting to:', `${process.env.FRONTEND_URL}/login?token=${token}`);
+    res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
   }
 );
 

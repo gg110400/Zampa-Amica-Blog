@@ -2,6 +2,26 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../models/User.js';
 
+
+console.log('Passport configuration loading');
+
+
+// Serializzazione dell'utente
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+// Deserializzazione dell'utente
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
+// Configurazione della strategia Google
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,

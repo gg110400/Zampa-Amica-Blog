@@ -18,6 +18,9 @@ import HowToHelp from './pages/HowToHelp.jsx';
 import BlogDetail from './pages/BlogDetail.jsx';
 import About from './pages/About.jsx';
 import Profile from './pages/Profile.jsx';
+import NewAdoption from './pages/NewAdoption.jsx';
+import NewPost from './pages/NewPost.jsx';
+import NewEvent from './pages/NewEvent.jsx';
 
 const App = () => {
   return (
@@ -40,6 +43,9 @@ const App = () => {
         <Route path='/volunteer' element={<HowToHelp/>} />
         <Route path='/about' element={<About/>} />
         <Route path='/profile' element={<Profile/>} />
+        <Route path='/create-animal-for-adoption' element={<NewAdoption/>} />
+        <Route path='/create-post' element={<NewPost/>} />
+        <Route path='/create-event' element={<NewEvent/>} />
       </Routes>
       <Footer/>
     </>

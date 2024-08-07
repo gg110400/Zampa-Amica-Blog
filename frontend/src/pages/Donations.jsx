@@ -1,17 +1,58 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaypal, faApplePay } from '@fortawesome/free-brands-svg-icons';
-import { faCreditCard, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faPaypal, faApplePay, faGooglePay } from '@fortawesome/free-brands-svg-icons';
+import { faCreditCard, faHeart, faPaw, faCoins, faCrown, faUsers, faStar, faTicket, faTshirt, faNewspaper, faDog, faChild, faGift, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 const Donations = () => {
   const [amount, setAmount] = useState('');
   const [isMonthly, setIsMonthly] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const navigate = useNavigate();
+
+  const subscriptionPlans = [
+    {
+      name: 'Gold Paw',
+      icon: faCrown,
+      price: 50,
+      benefits: [
+        { text: 'Accesso illimitato al rifugio', icon: faDog },
+        { text: 'Abbonamento alla rivista "Zampa Amica"', icon: faNewspaper },
+        { text: 'Partecipazione alle lotterie mensili', icon: faTicket },
+        { text: 'Gadget esclusivi di Zampa Amica', icon: faTshirt },
+        { text: 'Accesso VIP agli eventi speciali', icon: faStar },
+      ]
+    },
+    {
+      name: 'Family Fur',
+      icon: faUsers,
+      price: 75,
+      benefits: [
+        { text: 'Tutto del piano Gold Paw', icon: faCrown },
+        { text: 'Accesso al parco giochi per bambini', icon: faChild },
+        { text: 'Sessioni educative mensili per la famiglia', icon: faUsers },
+        { text: 'Sconto del 15% sulle adozioni', icon: faPaw },
+        { text: 'Regalo di compleanno per il tuo animale', icon: faGift },
+      ]
+    },
+    {
+      name: 'Platinum Whiskers',
+      icon: faStar,
+      price: 100,
+      benefits: [
+        { text: 'Tutto del piano Family Fur', icon: faUsers },
+        { text: 'Sessioni fotografiche professionali con gli animali', icon: faCrown },
+        { text: 'Accesso prioritario alle nuove adozioni', icon: faPaw },
+        { text: 'Inviti a cene di gala di beneficenza', icon: faGift },
+        { text: 'Nomina di un animale del rifugio', icon: faDog },
+      ]
+    }
+  ];
 
   const handleAmountChange = (e) => {
     setAmount(e.target.value);
+    setSelectedPlan(null);
   };
 
   const handleMonthlyChange = () => {
@@ -22,74 +63,153 @@ const Donations = () => {
     setPaymentMethod(method);
   };
 
+  const handlePlanSelect = (plan) => {
+    setSelectedPlan(plan);
+    setAmount(plan.price.toString());
+    setIsMonthly(true);
+  };
+
   const handleDonateNow = () => {
     if (amount && paymentMethod) {
-      navigate(`/checkout/${amount}/${isMonthly}/${paymentMethod}`);
+      navigate(`/checkout/${amount}/${isMonthly}/${paymentMethod}/${selectedPlan?.name || 'custom'}`);
     } else {
       alert('Per favore, seleziona un importo e un metodo di pagamento.');
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h2 className="text-4xl font-bold text-center mb-6 text-red-600">Fai una Donazione</h2>
-      <div className="bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto">
-        <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold mb-2 text-gray-800">Sostieni Una Zampa Amica</h3>
-          <p className="text-gray-700 text-sm">Aiutaci a salvare più animali e a trovare loro una casa amorevole. Ogni donazione fa la differenza.</p>
+    <div className="min-h-screen bg-gradient-to-br from-red-100 via-pink-100 to-orange-100 py-10 px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">
+            Sostieni Una Zampa Amica
+          </h2>
+          <p className="mt-2 text-xl text-gray-600">
+            Scegli come vuoi fare la differenza per i nostri amici a quattro zampe
+          </p>
         </div>
-        <div className="mb-4">
-          <label className="block text-md font-medium text-gray-700 mb-2">Importo della Donazione</label>
-          <div className="grid grid-cols-2 gap-2 mb-2">
-            <button className={`font-bold py-1 px-2 rounded shadow-md transition duration-300 ${amount === '10' ? 'bg-red-600 text-white' : 'bg-red-500 text-white hover:bg-red-600'}`} onClick={() => setAmount('10')}>€10</button>
-            <button className={`font-bold py-1 px-2 rounded shadow-md transition duration-300 ${amount === '20' ? 'bg-red-600 text-white' : 'bg-red-500 text-white hover:bg-red-600'}`} onClick={() => setAmount('20')}>€20</button>
-            <button className={`font-bold py-1 px-2 rounded shadow-md transition duration-300 ${amount === '50' ? 'bg-red-600 text-white' : 'bg-red-500 text-white hover:bg-red-600'}`} onClick={() => setAmount('50')}>€50</button>
-            <button className={`font-bold py-1 px-2 rounded shadow-md transition duration-300 ${amount === '100' ? 'bg-red-600 text-white' : 'bg-red-500 text-white hover:bg-red-600'}`} onClick={() => setAmount('100')}>€100</button>
-          </div>
-          <input
-            type="number"
-            className="w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-sm"
-            placeholder="Importo personalizzato"
-            value={amount}
-            onChange={handleAmountChange}
-          />
-        </div>
-        <div className="mb-4">
-          <label className="inline-flex items-center">
-            <input
-              type="checkbox"
-              className="form-checkbox h-4 w-4 text-red-600"
-              checked={isMonthly}
-              onChange={handleMonthlyChange}
-            />
-            <span className="ml-2 text-gray-700 text-md">Rendi questa una donazione mensile</span>
-          </label>
-        </div>
-        <div className="mb-6">
-          <label className="block text-md font-medium text-gray-700 mb-2">Metodo di Pagamento</label>
-          <div className="flex justify-around mb-2">
-            <button className={`bg-white border ${paymentMethod === 'creditCard' ? 'border-blue-500 ring-2 ring-blue-300' : 'border-gray-300'} text-gray-700 font-bold py-1 px-2 rounded shadow-md transition duration-300 hover:bg-gray-100`} onClick={() => handlePaymentMethodChange('creditCard')}>
-              <FontAwesomeIcon icon={faCreditCard} size="lg" />
-              <p className="mt-1 text-sm">Carta di Credito</p>
-            </button>
-            <button className={`bg-white border ${paymentMethod === 'paypal' ? 'border-yellow-500 ring-2 ring-yellow-300' : 'border-gray-300'} text-gray-700 font-bold py-1 px-2 rounded shadow-md transition duration-300 hover:bg-gray-100`} onClick={() => handlePaymentMethodChange('paypal')}>
-              <FontAwesomeIcon icon={faPaypal} size="lg" />
-              <p className="mt-1 text-sm">PayPal</p>
-            </button>
-            <button className={`bg-white border ${paymentMethod === 'applePay' ? 'border-black ring-2 ring-black' : 'border-gray-300'} text-gray-700 font-bold py-1 px-2 rounded shadow-md transition duration-300 hover:bg-gray-100`} onClick={() => handlePaymentMethodChange('applePay')}>
-              <FontAwesomeIcon icon={faApplePay} size="lg" />
-              <p className="mt-1 text-sm">Apple Pay</p>
-            </button>
+
+        <div className="bg-white shadow-xl rounded-2xl overflow-hidden mb-8">
+          <div className="p-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Abbonamenti Speciali</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {subscriptionPlans.map((plan) => (
+                <div 
+                  key={plan.name} 
+                  className={`border rounded-xl p-6 transition-all duration-300 cursor-pointer relative ${
+                    selectedPlan === plan 
+                      ? 'bg-gradient-to-br from-red-500 to-pink-500 text-white shadow-lg transform scale-105' 
+                      : 'bg-white border-gray-200 hover:border-red-300 hover:shadow-md'
+                  }`}
+                  onClick={() => handlePlanSelect(plan)}
+                >
+                  {selectedPlan === plan && (
+                    <div className="absolute top-2 right-2 bg-white text-red-500 rounded-full p-1">
+                      <FontAwesomeIcon icon={faCheck} />
+                    </div>
+                  )}
+                  <div className="flex items-center justify-center mb-4">
+                    <FontAwesomeIcon icon={plan.icon} className={`text-3xl ${selectedPlan === plan ? 'text-white' : 'text-red-500'}`} />
+                  </div>
+                  <h4 className={`text-xl font-bold text-center mb-2 ${selectedPlan === plan ? 'text-white' : 'text-gray-800'}`}>{plan.name}</h4>
+                  <p className={`text-2xl font-bold text-center mb-4 ${selectedPlan === plan ? 'text-white' : 'text-red-600'}`}>€{plan.price}/mese</p>
+                  <ul className="space-y-2">
+                    {plan.benefits.map((benefit, index) => (
+                      <li key={index} className="flex items-start">
+                        <FontAwesomeIcon icon={benefit.icon} className={`mr-2 mt-1 ${selectedPlan === plan ? 'text-white' : 'text-red-500'}`} />
+                        <span className={`text-sm ${selectedPlan === plan ? 'text-white' : 'text-gray-600'}`}>{benefit.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <button onClick={handleDonateNow} className="w-full bg-red-500 text-white font-bold py-2 px-4 rounded shadow-md transition duration-300 hover:bg-red-600 flex items-center justify-center">
-          <FontAwesomeIcon icon={faHeart} className="mr-2" />
-          Dona Ora
-        </button>
+
+        <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
+          <div className="p-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Donazione Personalizzata</h3>
+            <div className="mb-6">
+              <label className="block text-base font-medium text-gray-700 mb-3">Importo della Donazione</label>
+              <div className="grid grid-cols-4 gap-3 mb-3">
+                {['10', '20', '50', '100'].map((value) => (
+                  <button
+                    key={value}
+                    className={`text-sm font-bold py-2 px-3 rounded-full shadow-md transition duration-300 ${
+                      amount === value && !selectedPlan
+                        ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white'
+                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    }`}
+                    onClick={() => { setAmount(value); setSelectedPlan(null); }}
+                  >
+                    €{value}
+                  </button>
+                ))}
+              </div>
+              <div className="relative">
+                <FontAwesomeIcon icon={faCoins} className="absolute top-3 left-3 text-gray-400" />
+                <input
+                  type="number"
+                  className="w-full pl-10 pr-3 py-2 text-base border border-gray-300 rounded-full shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder="Importo personalizzato"
+                  value={amount}
+                  onChange={handleAmountChange}
+                />
+              </div>
+            </div>
+            <div className="mb-6">
+              <label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="form-checkbox h-5 w-5 text-red-600 rounded focus:ring-red-500"
+                  checked={isMonthly}
+                  onChange={handleMonthlyChange}
+                />
+                <span className="ml-2 text-gray-700 text-sm">Rendi questa una donazione mensile</span>
+              </label>
+            </div>
+            <div className="mb-6">
+              <label className="block text-base font-medium text-gray-700 mb-3">Metodo di Pagamento</label>
+              <div className="grid grid-cols-4 gap-3">
+                {[
+                  { name: 'creditCard', icon: faCreditCard, label: 'Carta' },
+                  { name: 'paypal', icon: faPaypal, label: 'PayPal' },
+                  { name: 'applePay', icon: faApplePay, label: 'Apple Pay' },
+                  { name: 'googlePay', icon: faGooglePay, label: 'Google Pay' },
+                ].map((method) => (
+                  <button
+                    key={method.name}
+                    className={`flex flex-col items-center justify-center p-3 border ${
+                      paymentMethod === method.name
+                        ? 'border-red-500 bg-red-50'
+                        : 'border-gray-300 hover:bg-gray-50'
+                    } rounded-lg shadow-sm transition duration-300 relative`}
+                    onClick={() => handlePaymentMethodChange(method.name)}
+                  >
+                    {paymentMethod === method.name && (
+                      <div className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs">
+                        <FontAwesomeIcon icon={faCheck} />
+                      </div>
+                    )}
+                    <FontAwesomeIcon icon={method.icon} className="text-xl mb-1" />
+                    <p className="text-xs">{method.label}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={handleDonateNow}
+              className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-lg font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 hover:from-red-600 hover:to-pink-600 transform hover:-translate-y-1 flex items-center justify-center"
+            >
+              <FontAwesomeIcon icon={faHeart} className="mr-2" />
+              Dona Ora
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
 export default Donations;
-

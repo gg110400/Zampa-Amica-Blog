@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faPhone, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
-import './Contact.css'; // Assicurati di importare il file CSS per gli stili personalizzati
+import { faEnvelope, faPhone, faMapMarkerAlt, faPaperPlane, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faFacebookF, faTwitter, faInstagram, faLinkedinIn } from '@fortawesome/free-brands-svg-icons';
 
 const Contact = () => {
   const [name, setName] = useState('');
@@ -14,64 +14,92 @@ const Contact = () => {
   };
 
   return (
-    <div className="contact-container mx-auto px-4 py-8 font-poppins">
-      <h2 className="text-4xl font-bold text-center mb-8 text-red-600">Contattaci</h2>
-      <div className="flex flex-col md:flex-row md:space-x-8">
-        <div className="md:w-1/2 bg-white shadow-md rounded-lg p-6 mb-8 md:mb-0">
-          <h3 className="text-2xl font-bold mb-4 text-gray-800">Scrivici un messaggio</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-md font-medium text-gray-700 mb-2">Nome</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-sm"
-                placeholder="Il tuo nome"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-md font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-sm"
-                placeholder="La tua email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-md font-medium text-gray-700 mb-2">Messaggio</label>
-              <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-sm"
-                placeholder="Il tuo messaggio"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows="5"
-                required
-              ></textarea>
-            </div>
-            <button type="submit" className="w-full bg-gradient-to-r from-orange-400 via-red-400 to-pink-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 hover:bg-opacity-80 text-sm">
-              Invia Messaggio
-            </button>
-          </form>
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-orange-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-10">
+          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 mb-3">
+            Contattaci
+          </h2>
+          <p className="text-lg text-gray-600">Siamo qui per aiutarti. Mandaci un messaggio!</p>
         </div>
-        <div className="md:w-1/2 bg-white shadow-md rounded-lg p-6">
-          <h3 className="text-2xl font-bold mb-4 text-gray-800">Informazioni di Contatto</h3>
-          <div className="mb-4">
-            <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-500 mr-2" />
-            <span className="text-gray-700 text-md">Via Roma 123, 00100 Roma, Italia</span>
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-1/2 p-8">
+              <h3 className="text-2xl font-bold mb-6 text-gray-800">Scrivici un messaggio</h3>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-300"
+                    placeholder="Il tuo nome"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-300"
+                    placeholder="La tua email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <textarea
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-300"
+                    placeholder="Il tuo messaggio"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows="4"
+                    required
+                  ></textarea>
+                </div>
+                <button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold py-3 px-6 rounded-full shadow-md transition duration-300 hover:from-red-600 hover:to-pink-600 transform hover:-translate-y-0.5 flex items-center justify-center"
+                >
+                  <FontAwesomeIcon icon={faPaperPlane} className="mr-2" />
+                  Invia Messaggio
+                </button>
+              </form>
+            </div>
+            <div className="md:w-1/2 bg-gradient-to-br from-red-500 to-pink-600 p-8 text-white">
+              <h3 className="text-2xl font-bold mb-6">Informazioni di Contatto</h3>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-4 mt-1 text-xl" />
+                  <span>Via Roma 123, 00100 Roma, Italia</span>
+                </div>
+                <div className="flex items-center">
+                  <FontAwesomeIcon icon={faPhone} className="mr-4 text-xl" />
+                  <span>+39 0123 456789</span>
+                </div>
+                <div className="flex items-center">
+                  <FontAwesomeIcon icon={faEnvelope} className="mr-4 text-xl" />
+                  <span>info@unazampaamica.com</span>
+                </div>
+              </div>
+              <div className="mt-8">
+                <h4 className="text-xl font-semibold mb-4">Seguici sui social</h4>
+                <div className="flex space-x-3">
+                  {[faFacebookF, faTwitter, faInstagram, faLinkedinIn].map((icon, index) => (
+                    <a key={index} href="#" className="bg-white p-2 rounded-full text-red-500 hover:text-pink-600 transition duration-300 transform hover:-translate-y-1">
+                      <FontAwesomeIcon icon={icon} size="lg" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="mb-4">
-            <FontAwesomeIcon icon={faPhone} className="text-red-500 mr-2" />
-            <span className="text-gray-700 text-md">+39 0123 456789</span>
-          </div>
-          <div className="mb-4">
-            <FontAwesomeIcon icon={faEnvelope} className="text-red-500 mr-2" />
-            <span className="text-gray-700 text-md">info@unazampaamica.com</span>
-          </div>
+        </div>
+        <div className="text-center mt-8">
+          <p className="text-base text-gray-600 flex items-center justify-center">
+            <FontAwesomeIcon icon={faHeart} className="text-red-500 mr-2" />
+            Grazie per il tuo interesse in Una Zampa Amica
+          </p>
         </div>
       </div>
     </div>

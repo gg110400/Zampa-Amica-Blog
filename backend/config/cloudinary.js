@@ -13,8 +13,8 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'your_folder_name',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'gif']
+    folder: 'zampa_amica',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'avif']
   },
 });
 

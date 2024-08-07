@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaypal, faApplePay } from '@fortawesome/free-brands-svg-icons';
-import { faCreditCard } from '@fortawesome/free-solid-svg-icons';
-import './Checkout.css'; // Assicurati di importare il file CSS
+import { faPaypal, faApplePay, faGooglePay } from '@fortawesome/free-brands-svg-icons';
+import { faCreditCard, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 const Checkout = () => {
   const { amount, isMonthly, paymentMethod } = useParams();
@@ -27,147 +26,148 @@ const Checkout = () => {
     if (paymentMethod === 'creditCard') return faCreditCard;
     if (paymentMethod === 'paypal') return faPaypal;
     if (paymentMethod === 'applePay') return faApplePay;
+    if (paymentMethod === 'googlePay') return faGooglePay;
     return null;
   };
 
+  const getPaymentMethodName = () => {
+    if (paymentMethod === 'creditCard') return 'Carta di Credito';
+    if (paymentMethod === 'paypal') return 'PayPal';
+    if (paymentMethod === 'applePay') return 'Apple Pay';
+    if (paymentMethod === 'googlePay') return 'Google Pay';
+    return 'Metodo sconosciuto';
+  };
+
+  const getBorderColor = () => {
+    if (paymentMethod === 'creditCard') return 'from-blue-400 to-blue-600';
+    if (paymentMethod === 'paypal') return 'from-yellow-400 to-yellow-600';
+    if (paymentMethod === 'applePay') return 'from-gray-700 to-black';
+    if (paymentMethod === 'googlePay') return 'from-green-400 to-green-600';
+    return 'from-gray-400 to-gray-600';
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 font-poppins text-sm">
-      <h2 className="text-3xl font-bold text-center mb-4 text-red-600">Completa la Donazione</h2>
-      <div className={`bg-white shadow-md rounded-lg p-4 max-w-lg mx-auto ${paymentMethod === 'creditCard' ? 'border-t-4 border-blue-600' : paymentMethod === 'paypal' ? 'border-t-4 border-yellow-500' : 'border-t-4 border-black'}`}>
-        <div className="text-center mb-4">
-          <h3 className="text-xl font-bold mb-2 text-gray-800">Dettagli del Pagamento</h3>
-          <p className="text-gray-700 text-xs">
-            Stai per donare €{amount} {isMonthly === 'true' && 'ogni mese'} tramite {paymentMethod === 'creditCard' ? 'Carta di Credito' : paymentMethod === 'paypal' ? 'PayPal' : 'Apple Pay'}.
-          </p>
-          <FontAwesomeIcon icon={getPaymentIcon()} size="2x" className="my-2" />
+    <div className="min-h-screen bg-gradient-to-br from-red-100 via-pink-100 to-orange-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-lg mx-auto">
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600">
+            Completa la Donazione
+          </h2>
         </div>
-        <form onSubmit={handleSubmit} className={paymentMethod === 'creditCard' ? 'max-h-80 overflow-y-auto custom-scrollbar pr-6' : ''}>
-          {paymentMethod === 'creditCard' && (
-            <>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Nome sulla Carta</label>
+        <div className="bg-white shadow-2xl rounded-3xl overflow-hidden">
+          <div className={`bg-gradient-to-r ${getBorderColor()} p-6 text-white`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold mb-1">Dettagli del Pagamento</h3>
+                <p className="text-sm opacity-90">
+                  Donazione di €{amount} {isMonthly === 'true' && 'al mese'}
+                </p>
+              </div>
+              <FontAwesomeIcon icon={getPaymentIcon()} size="3x" />
+            </div>
+          </div>
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {paymentMethod === 'creditCard' && (
+              <>
                 <input
                   type="text"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   placeholder="Nome sulla Carta"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
                 />
-              </div>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Numero della Carta</label>
                 <input
                   type="text"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   placeholder="Numero della Carta"
                   value={cardNumber}
                   onChange={(e) => setCardNumber(e.target.value)}
                   required
                 />
-              </div>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Data di Scadenza</label>
+                <div className="flex space-x-4">
+                  <input
+                    type="text"
+                    className="w-1/2 px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    placeholder="MM/YY"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    required
+                  />
+                  <input
+                    type="text"
+                    className="w-1/2 px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    placeholder="CVV"
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value)}
+                    required
+                  />
+                </div>
                 <input
                   type="text"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="MM/YY"
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">CVV</label>
-                <input
-                  type="text"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="CVV"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Indirizzo di Fatturazione</label>
-                <input
-                  type="text"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Indirizzo"
+                  className="w-full px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder="Indirizzo di Fatturazione"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   required
                 />
-              </div>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Città</label>
+                <div className="flex space-x-4">
+                  <input
+                    type="text"
+                    className="w-1/2 px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    placeholder="Città"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    required
+                  />
+                  <input
+                    type="text"
+                    className="w-1/2 px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    placeholder="CAP"
+                    value={zip}
+                    onChange={(e) => setZip(e.target.value)}
+                    required
+                  />
+                </div>
                 <input
                   type="text"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Città"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">CAP</label>
-                <input
-                  type="text"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="CAP"
-                  value={zip}
-                  onChange={(e) => setZip(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Paese</label>
-                <input
-                  type="text"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   placeholder="Paese"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   required
                 />
-              </div>
-            </>
-          )}
-          {paymentMethod === 'paypal' && (
-            <>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Email di PayPal</label>
+              </>
+            )}
+            {(paymentMethod === 'paypal' || paymentMethod === 'applePay' || paymentMethod === 'googlePay') && (
+              <>
                 <input
                   type="email"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
-                  placeholder="Email di PayPal"
+                  className="w-full px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder={`Email per ${getPaymentMethodName()}`}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-              </div>
-            </>
-          )}
-          {paymentMethod === 'applePay' && (
-            <>
-              <div className="mb-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Email per Apple Pay</label>
                 <input
-                  type="email"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black"
-                  placeholder="Email per Apple Pay"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  className="w-full px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder="Nome completo"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
-              </div>
-            </>
-          )}
-          <button className="w-full bg-red-500 text-white font-bold py-2 px-4 rounded shadow-md transition duration-300 hover:bg-red-600 text-sm">
-            Completa la Donazione
-          </button>
-        </form>
+              </>
+            )}
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-lg font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 hover:from-red-600 hover:to-pink-600 transform hover:-translate-y-1 flex items-center justify-center"
+            >
+              <FontAwesomeIcon icon={faHeart} className="mr-2" />
+              Completa la Donazione
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -4,6 +4,10 @@ import { cloudinary } from '../config/cloudinary.js';
 
 export const createAnimal = async (req, res, next) => {
   try {
+    console.log('Received request body:', req.body);
+    console.log('Authenticated user:', req.user);
+    console.log('Uploaded file:', req.file);
+
     const { name, species, breed, age, gender, description, adoptionStatus, medicalHistory } = req.body;
 
     if (!name || !species) {
@@ -12,7 +16,8 @@ export const createAnimal = async (req, res, next) => {
 
     let imageUrl = null;
     if (req.file) {
-      imageUrl = req.file.path;
+      const result = await cloudinary.uploader.upload(req.file.path);
+      imageUrl = result.secure_url;
     }
 
     const newAnimal = new Animal({
@@ -30,6 +35,7 @@ export const createAnimal = async (req, res, next) => {
     await newAnimal.save();
     res.status(201).json(newAnimal);
   } catch (error) {
+    console.error('Error in createAnimal:', error);
     next(error);
   }
 };
@@ -39,6 +45,7 @@ export const getAllAnimals = async (req, res, next) => {
     const animals = await Animal.find();
     res.json(animals);
   } catch (error) {
+    console.error('Error in getAllAnimals:', error);
     next(error);
   }
 };
@@ -51,6 +58,7 @@ export const getAnimalById = async (req, res, next) => {
     }
     res.json(animal);
   } catch (error) {
+    console.error('Error in getAnimalById:', error);
     next(error);
   }
 };
@@ -64,7 +72,6 @@ export const updateAnimal = async (req, res, next) => {
       throw new NotFoundError('Animal not found');
     }
 
-    // Check if the user has permission to update (you might want to add role-based checks here)
     if (req.user.role !== 'Admin') {
       throw new UnauthorizedError('Not authorized to update animal information');
     }
@@ -79,17 +86,18 @@ export const updateAnimal = async (req, res, next) => {
     if (medicalHistory) animal.medicalHistory = medicalHistory;
 
     if (req.file) {
-      // Delete old image if exists
       if (animal.imageUrl) {
         const publicId = animal.imageUrl.split('/').pop().split('.')[0];
         await cloudinary.uploader.destroy(publicId);
       }
-      animal.imageUrl = req.file.path;
+      const result = await cloudinary.uploader.upload(req.file.path);
+      animal.imageUrl = result.secure_url;
     }
 
     await animal.save();
     res.json(animal);
   } catch (error) {
+    console.error('Error in updateAnimal:', error);
     next(error);
   }
 };
@@ -102,12 +110,10 @@ export const deleteAnimal = async (req, res, next) => {
       throw new NotFoundError('Animal not found');
     }
 
-    // Check if the user has permission to delete (you might want to add role-based checks here)
     if (req.user.role !== 'Admin') {
       throw new UnauthorizedError('Not authorized to delete animal');
     }
 
-    // Delete image from Cloudinary if exists
     if (animal.imageUrl) {
       const publicId = animal.imageUrl.split('/').pop().split('.')[0];
       await cloudinary.uploader.destroy(publicId);
@@ -116,6 +122,7 @@ export const deleteAnimal = async (req, res, next) => {
     await animal.remove();
     res.json({ message: 'Animal removed successfully' });
   } catch (error) {
+    console.error('Error in deleteAnimal:', error);
     next(error);
   }
 };
@@ -134,6 +141,7 @@ export const searchAnimals = async (req, res, next) => {
     const animals = await Animal.find(query);
     res.json(animals);
   } catch (error) {
+    console.error('Error in searchAnimals:', error);
     next(error);
   }
 };
