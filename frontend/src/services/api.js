@@ -114,7 +114,9 @@ export const toggleBlogSubscription = async (token) => {
         headers: { 
           ...getAuthHeader(),
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
       });
       return response.data;
     } catch (error) {

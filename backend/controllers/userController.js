@@ -50,29 +50,35 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
+
 export const updateUserAvatar = async (req, res, next) => {
   try {
+    console.log('File:', req.file);
+    console.log('User ID:', req.user._id);
+
     if (!req.file) {
-      throw new BadRequestError('Nessun file caricato');
+      return res.status(400).json({ message: 'Nessun file caricato' });
     }
 
     const avatarUrl = req.file.path;
 
     const user = await User.findByIdAndUpdate(
-      req.user.id,
+      req.user._id,
       { $set: { avatar: avatarUrl } },
       { new: true }
     ).select('-password');
 
     if (!user) {
-      throw new NotFoundError('Utente non trovato');
+      return res.status(404).json({ message: 'Utente non trovato' });
     }
 
-    res.json({ user, token: user.token });
+    res.json({ user });
   } catch (error) {
-    next(error);
+    console.error('Errore durante l\'aggiornamento dell\'avatar:', error);
+    res.status(500).json({ message: 'Errore del server', error: error.message });
   }
 };
+
 
 export const loginUser = async (req, res, next) => {
   try {

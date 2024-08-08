@@ -18,7 +18,10 @@ import multer from 'multer';
 const router = express.Router();
 
 // Configura multer con lo storage di Cloudinary
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // Limite a 5MB
+});
 
 // Rotte pubbliche
 router.post('/register', registerUser);
