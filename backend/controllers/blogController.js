@@ -2,7 +2,8 @@ import BlogPost from '../models/BlogPost.js';
 import User from '../models/User.js';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/errorTypes.js';
 import { sendNewPostNotificationEmail } from '../utils/emailService.js';
-import { cloudinary } from '../config/cloudinary.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 export const createPost = async (req, res, next) => {
   try {
@@ -18,8 +19,7 @@ export const createPost = async (req, res, next) => {
 
     let imageUrl = null;
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path);
-      imageUrl = result.secure_url;
+      imageUrl = `/uploads/${req.file.filename}`;
     }
 
     const newPost = new BlogPost({
@@ -76,7 +76,7 @@ export const updatePost = async (req, res, next) => {
       throw new NotFoundError('Post not found');
     }
 
-    if (post.author.toString() !== req.user.id && req.user.role !== 'Admin') {
+    if (post.author.toString() !== req.user.id && req.user.role !== 'admin') {
       throw new UnauthorizedError('User not authorized to update this post');
     }
 
@@ -86,11 +86,10 @@ export const updatePost = async (req, res, next) => {
 
     if (req.file) {
       if (post.imageUrl) {
-        const publicId = post.imageUrl.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(publicId);
+        const oldPath = path.join(process.cwd(), 'public', post.imageUrl);
+        await fs.unlink(oldPath).catch(err => console.error('Error deleting old image:', err));
       }
-      const result = await cloudinary.uploader.upload(req.file.path);
-      post.imageUrl = result.secure_url;
+      post.imageUrl = `/uploads/${req.file.filename}`;
     }
 
     await post.save();
@@ -109,16 +108,16 @@ export const deletePost = async (req, res, next) => {
       throw new NotFoundError('Post not found');
     }
 
-    if (post.author.toString() !== req.user.id && req.user.role !== 'Admin') {
+    if (post.author.toString() !== req.user.id && req.user.role !== 'admin') {
       throw new UnauthorizedError('User not authorized to delete this post');
     }
 
     if (post.imageUrl) {
-      const publicId = post.imageUrl.split('/').pop().split('.')[0];
-      await cloudinary.uploader.destroy(publicId);
+      const imagePath = path.join(process.cwd(), 'public', post.imageUrl);
+      await fs.unlink(imagePath).catch(err => console.error('Error deleting image:', err));
     }
 
-    await post.remove();
+    await post.deleteOne();
     res.json({ message: 'Post removed' });
   } catch (error) {
     console.error('Error in deletePost:', error);

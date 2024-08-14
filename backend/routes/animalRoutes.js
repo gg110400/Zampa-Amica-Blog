@@ -8,14 +8,9 @@ import {
    searchAnimals
 } from '../controllers/animalController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
-import { storage } from '../config/cloudinary.js';
-import multer from 'multer';
-import adminMiddleware from '../middleware/adminMiddleware.js';
-
+import upload from '../config/multerConfig.js';
+import adminMiddleware from '../middleware/adminMiddleware.js'
 const router = express.Router();
-
-// Configura multer con lo storage di Cloudinary
-const upload = multer({ storage: storage });
 
 // Public routes
 router.get('/', getAllAnimals);

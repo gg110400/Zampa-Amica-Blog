@@ -11,23 +11,13 @@ import {
    setAdminRole
 } from '../controllers/userController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
-import { generateToken } from '../utils/authUtils.js';
-import { storage } from '../config/cloudinary.js';
-import multer from 'multer';
+import upload from '../config/multerConfig.js';
 
 const router = express.Router();
 
-// Configura multer con lo storage di Cloudinary
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // Limite a 5MB
-});
-
-// Rotte pubbliche
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 
-// Rotte protette
 router.get('/profile', authMiddleware, getUserProfile);
 router.put('/profile', authMiddleware, updateUserProfile);
 router.delete('/', authMiddleware, deleteUser);
@@ -36,10 +26,6 @@ router.post('/update-avatar', authMiddleware, upload.single('avatar'), updateUse
 router.post('/set-admin', authMiddleware, setAdminRole);
 
 
-
-console.log('Route file loaded');
-
-// Inizia l'autenticazione Google
 router.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );

@@ -2,7 +2,8 @@ import Event from '../models/Event.js';
 import User from '../models/User.js';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/errorTypes.js';
 import { sendEventRegistrationEmail } from '../utils/emailService.js';
-import { cloudinary } from '../config/cloudinary.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 export const createEvent = async (req, res, next) => {
   try {
@@ -18,10 +19,7 @@ export const createEvent = async (req, res, next) => {
 
     let imageUrl = null;
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.buffer, {
-        folder: 'zampa_amica',
-      });
-      imageUrl = result.secure_url;
+      imageUrl = `/uploads/${req.file.filename}`;
     }
 
     const newEvent = new Event({
@@ -74,7 +72,7 @@ export const updateEvent = async (req, res, next) => {
       throw new NotFoundError('Event not found');
     }
 
-    if (event.organizer.toString() !== req.user.id && req.user.role !== 'Admin') {
+    if (event.organizer.toString() !== req.user.id && req.user.role !== 'admin') {
       throw new UnauthorizedError('User not authorized to update this event');
     }
 
@@ -86,11 +84,10 @@ export const updateEvent = async (req, res, next) => {
 
     if (req.file) {
       if (event.imageUrl) {
-        const publicId = event.imageUrl.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(publicId);
+        const oldPath = path.join(process.cwd(), 'public', event.imageUrl);
+        await fs.unlink(oldPath).catch(err => console.error('Error deleting old image:', err));
       }
-      const result = await cloudinary.uploader.upload(req.file.path);
-      event.imageUrl = result.secure_url;
+      event.imageUrl = `/uploads/${req.file.filename}`;
     }
 
     await event.save();
@@ -109,16 +106,16 @@ export const deleteEvent = async (req, res, next) => {
       throw new NotFoundError('Event not found');
     }
 
-    if (event.organizer.toString() !== req.user.id && req.user.role !== 'Admin') {
+    if (event.organizer.toString() !== req.user.id && req.user.role !== 'admin') {
       throw new UnauthorizedError('User not authorized to delete this event');
     }
 
     if (event.imageUrl) {
-      const publicId = event.imageUrl.split('/').pop().split('.')[0];
-      await cloudinary.uploader.destroy(publicId);
+      const imagePath = path.join(process.cwd(), 'public', event.imageUrl);
+      await fs.unlink(imagePath).catch(err => console.error('Error deleting image:', err));
     }
 
-    await event.remove();
+    await event.deleteOne();
     res.json({ message: 'Event removed' });
   } catch (error) {
     console.error('Error in deleteEvent:', error);
@@ -186,7 +183,7 @@ export const getEventParticipants = async (req, res, next) => {
       throw new NotFoundError('Event not found');
     }
 
-    if (event.organizer.toString() !== req.user.id && req.user.role !== 'Admin') {
+    if (event.organizer.toString() !== req.user.id && req.user.role !== 'admin') {
       throw new UnauthorizedError('Only the event organizer or admin can view participants');
     }
 

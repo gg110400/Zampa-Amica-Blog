@@ -31,19 +31,10 @@ const Profile = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("Token non trovato");
-      const response = await api.getUserProfile(token);
-
-      if (!response.user.role) {
-        console.error("Ruolo utente mancante nella risposta API");
-        throw new Error("Dati utente incompleti");
-      }
-
+      const response = await api.getUserProfile();
       setUser(response.user);
       setAvatar(response.user.avatar);
       localStorage.setItem("userRole", response.user.role);
-      console.log("Ruolo utente:", response.user.role);
       setIsLoading(false);
     } catch (err) {
       console.error("Errore nel caricamento del profilo:", err);
@@ -51,15 +42,13 @@ const Profile = () => {
         "Errore nel caricamento del profilo. Assicurati di essere autenticato."
       );
       setIsLoading(false);
-      if (err.message === "Token non trovato") navigate("/login");
+      if (err.response && err.response.status === 401) navigate("/login");
     }
   };
 
   const handleToggleSubscription = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("Token non trovato");
-      await api.toggleBlogSubscription(token);
+      await api.toggleBlogSubscription();
       setUser((prevUser) => ({
         ...prevUser,
         subscribedToBlog: !prevUser.subscribedToBlog,
@@ -74,14 +63,18 @@ const Profile = () => {
     const file = e.target.files[0];
     if (file) {
       const formData = new FormData();
-      formData.append("avatar", file, file.name);  // Aggiungi il nome del file
-      
+      formData.append("avatar", file);
+
       try {
         const response = await api.updateUserAvatar(formData);
         if (response.user && response.user.avatar) {
           setAvatar(response.user.avatar);
-          setUser(prevUser => ({ ...prevUser, avatar: response.user.avatar }));
+          setUser((prevUser) => ({
+            ...prevUser,
+            avatar: response.user.avatar,
+          }));
         }
+        console.log("Avatar updated successfully:", response.user.avatar);
       } catch (err) {
         console.error("Errore durante il caricamento dell'avatar:", err);
         setError("Errore durante il caricamento dell'avatar");
@@ -96,10 +89,7 @@ const Profile = () => {
       )
     ) {
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) throw new Error("Token non trovato");
-        await api.deleteUser(token);
-        localStorage.removeItem("authToken");
+        await api.deleteUser();
         navigate("/");
       } catch (err) {
         console.error("Errore durante l'eliminazione dell'account:", err);
@@ -142,14 +132,15 @@ const Profile = () => {
     navigate("/create-event");
   };
 
-  if (isLoading)
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-red-100 via-pink-100 to-purple-100">
         <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-red-500"></div>
       </div>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
       <div className="container mx-auto px-4 py-8 text-center bg-gradient-to-br from-red-100 via-pink-100 to-purple-100 min-h-screen">
         <div
@@ -161,7 +152,7 @@ const Profile = () => {
         </div>
       </div>
     );
-
+  }
   return (
     <div className="bg-gradient-to-br from-red-100 via-pink-100 to-purple-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
@@ -180,7 +171,7 @@ const Profile = () => {
               <div className="text-center mb-8">
                 <div className="relative inline-block">
                   <img
-                    src={avatar || "https://via.placeholder.com/150"}
+                    src={avatar || "https://placehold.co/150"}
                     alt="Avatar"
                     className="w-48 h-48 rounded-full border-4 border-white object-cover shadow-lg"
                   />

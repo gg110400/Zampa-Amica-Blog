@@ -1,25 +1,25 @@
-import Animal from '../models/Animal.js';
-import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/errorTypes.js';
-import { cloudinary } from '../config/cloudinary.js';
+import Animal from '../models/Animal.js'; // Importa il modello Animal
+import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/errorTypes.js'; // Importa i tipi di errore personalizzati
+import fs from 'fs/promises'; // Importa il modulo fs per operazioni sui file
+import path from 'path'; // Importa il modulo path per gestire i percorsi dei file
 
+// Funzione per creare un nuovo animale
 export const createAnimal = async (req, res, next) => {
   try {
-    console.log('Received request body:', req.body);
-    console.log('Authenticated user:', req.user);
-    console.log('Uploaded file:', req.file);
-
+    // Estrae i dati dal corpo della richiesta
     const { name, species, breed, age, gender, description, adoptionStatus, medicalHistory } = req.body;
 
+    // Controlla se i campi obbligatori sono presenti
     if (!name || !species) {
-      throw new BadRequestError('Name and species are required');
+      throw new BadRequestError('Name and species are required'); // Errore se mancano i campi obbligatori
     }
 
-    let imageUrl = null;
+    let imageUrl = null; // Inizializza l'URL dell'immagine
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path);
-      imageUrl = result.secure_url;
+      imageUrl = `/uploads/${req.file.filename}`; // Imposta l'URL dell'immagine se presente
     }
 
+    // Crea un nuovo oggetto Animal
     const newAnimal = new Animal({
       name,
       species,
@@ -32,50 +32,53 @@ export const createAnimal = async (req, res, next) => {
       medicalHistory
     });
 
-    await newAnimal.save();
-    res.status(201).json(newAnimal);
+    await newAnimal.save(); // Salva il nuovo animale nel database
+    res.status(201).json(newAnimal); // Risponde con il nuovo animale creato
   } catch (error) {
-    console.error('Error in createAnimal:', error);
-    next(error);
+    next(error); // Passa l'errore al middleware di gestione degli errori
   }
 };
 
+// Funzione per ottenere tutti gli animali
 export const getAllAnimals = async (req, res, next) => {
   try {
-    const animals = await Animal.find();
-    res.json(animals);
+    const animals = await Animal.find(); // Trova tutti gli animali nel database
+    res.json(animals); // Risponde con la lista degli animali
   } catch (error) {
-    console.error('Error in getAllAnimals:', error);
-    next(error);
+    next(error); // Passa l'errore al middleware di gestione degli errori
   }
 };
 
+// Funzione per ottenere un animale per ID
 export const getAnimalById = async (req, res, next) => {
   try {
-    const animal = await Animal.findById(req.params.id);
+    const animal = await Animal.findById(req.params.id); // Trova l'animale per ID
     if (!animal) {
-      throw new NotFoundError('Animal not found');
+      throw new NotFoundError('Animal not found'); // Errore se l'animale non esiste
     }
-    res.json(animal);
+    res.json(animal); // Risponde con l'animale trovato
   } catch (error) {
-    console.error('Error in getAnimalById:', error);
-    next(error);
+    next(error); // Passa l'errore al middleware di gestione degli errori
   }
 };
 
+// Funzione per aggiornare un animale
 export const updateAnimal = async (req, res, next) => {
   try {
+    // Estrae i dati dal corpo della richiesta
     const { name, species, breed, age, gender, description, adoptionStatus, medicalHistory } = req.body;
-    const animal = await Animal.findById(req.params.id);
+    const animal = await Animal.findById(req.params.id); // Trova l'animale per ID
 
     if (!animal) {
-      throw new NotFoundError('Animal not found');
+      throw new NotFoundError('Animal not found'); // Errore se l'animale non esiste
     }
 
-    if (req.user.role !== 'Admin') {
-      throw new UnauthorizedError('Not authorized to update animal information');
+    // Controlla se l'utente ha i permessi per aggiornare
+    if (req.user.role !== 'admin') {
+      throw new UnauthorizedError('Not authorized to update animal information'); // Errore se non autorizzato
     }
 
+    // Aggiorna i campi dell'animale se forniti
     if (name) animal.name = name;
     if (species) animal.species = species;
     if (breed) animal.breed = breed;
@@ -87,17 +90,15 @@ export const updateAnimal = async (req, res, next) => {
 
     if (req.file) {
       if (animal.imageUrl) {
-        const publicId = animal.imageUrl.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(publicId);
+        const oldPath = path.join(process.cwd(), 'public', animal.imageUrl);
+        await fs.unlink(oldPath).catch(err => console.error('Error deleting old image:', err));
       }
-      const result = await cloudinary.uploader.upload(req.file.path);
-      animal.imageUrl = result.secure_url;
+      animal.imageUrl = `/uploads/${req.file.filename}`;
     }
 
     await animal.save();
     res.json(animal);
   } catch (error) {
-    console.error('Error in updateAnimal:', error);
     next(error);
   }
 };
@@ -110,19 +111,18 @@ export const deleteAnimal = async (req, res, next) => {
       throw new NotFoundError('Animal not found');
     }
 
-    if (req.user.role !== 'Admin') {
+    if (req.user.role !== 'admin') {
       throw new UnauthorizedError('Not authorized to delete animal');
     }
 
     if (animal.imageUrl) {
-      const publicId = animal.imageUrl.split('/').pop().split('.')[0];
-      await cloudinary.uploader.destroy(publicId);
+      const imagePath = path.join(process.cwd(), 'public', animal.imageUrl);
+      await fs.unlink(imagePath).catch(err => console.error('Error deleting image:', err));
     }
 
-    await animal.remove();
+    await animal.deleteOne();
     res.json({ message: 'Animal removed successfully' });
   } catch (error) {
-    console.error('Error in deleteAnimal:', error);
     next(error);
   }
 };
@@ -141,7 +141,6 @@ export const searchAnimals = async (req, res, next) => {
     const animals = await Animal.find(query);
     res.json(animals);
   } catch (error) {
-    console.error('Error in searchAnimals:', error);
     next(error);
   }
 };
