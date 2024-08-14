@@ -110,7 +110,17 @@ export const getUserProfile = async (req, res, next) => {
     if (!user) {
       throw new NotFoundError('User not found');
     }
-    res.json({ user: { ...user.toObject(), role: user.role } });
+
+    const baseUrl = 'http://localhost:3000';
+    const fullAvatarUrl = user.avatar ? `${baseUrl}${user.avatar}` : null;
+
+    res.json({ 
+      user: { 
+        ...user.toObject(), 
+        avatar: fullAvatarUrl,
+        role: user.role 
+      } 
+    });
   } catch (error) {
     next(error);
   }

@@ -35,12 +35,11 @@ const Profile = () => {
       setUser(response.user);
       setAvatar(response.user.avatar);
       localStorage.setItem("userRole", response.user.role);
+      console.log('Profilo utente caricato:', response.user);
       setIsLoading(false);
     } catch (err) {
       console.error("Errore nel caricamento del profilo:", err);
-      setError(
-        "Errore nel caricamento del profilo. Assicurati di essere autenticato."
-      );
+      setError("Errore nel caricamento del profilo. Assicurati di essere autenticato.");
       setIsLoading(false);
       if (err.response && err.response.status === 401) navigate("/login");
     }
