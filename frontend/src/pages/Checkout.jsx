@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaypal, faApplePay, faGooglePay } from '@fortawesome/free-brands-svg-icons';
-import { faCreditCard, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faCreditCard, faHeart, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 const Checkout = () => {
   const { amount, isMonthly, paymentMethod } = useParams();
+  const navigate = useNavigate();
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
@@ -15,11 +16,12 @@ const Checkout = () => {
   const [city, setCity] = useState('');
   const [zip, setZip] = useState('');
   const [country, setCountry] = useState('');
+  const [isConfirmed, setIsConfirmed] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Logica per gestire il pagamento
-    alert('Pagamento completato!');
+    setIsConfirmed(true);
   };
 
   const getPaymentIcon = () => {
@@ -46,6 +48,32 @@ const Checkout = () => {
     return 'from-gray-400 to-gray-600';
   };
 
+  if (!amount || !isMonthly || !paymentMethod) {
+    return <div>Errore: Parametri mancanti</div>;
+  }
+
+  const isMonthlyBoolean = isMonthly === 'true';
+
+  if (isConfirmed) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-100 via-pink-100 to-orange-100 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-3xl shadow-2xl text-center">
+          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FontAwesomeIcon icon={faCheck} className="text-5xl text-green-500" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Grazie per aver donato a Una Zampa Amica</h2>
+          <p className="text-xl text-gray-600 mb-8">La tua donazione è andata a buon fine</p>
+          <button
+            onClick={() => navigate('/donations')}
+            className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-lg font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 hover:from-red-600 hover:to-pink-600"
+          >
+            Torna alle Donazioni
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-100 via-pink-100 to-orange-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-lg mx-auto">
@@ -60,7 +88,7 @@ const Checkout = () => {
               <div>
                 <h3 className="text-2xl font-bold mb-1">Dettagli del Pagamento</h3>
                 <p className="text-sm opacity-90">
-                  Donazione di €{amount} {isMonthly === 'true' && 'al mese'}
+                  Donazione di €{amount} {isMonthlyBoolean ? 'al mese' : 'una tantum'}
                 </p>
               </div>
               <FontAwesomeIcon icon={getPaymentIcon()} size="3x" />

@@ -292,7 +292,7 @@ const Gallery = () => {
                 <img
                   src={animal.imageUrl}
                   alt={animal.name}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-60 object-cover"
                 />
                 <div className="absolute top-0 left-0 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-br-lg">
                   {animal.adoptionStatus}

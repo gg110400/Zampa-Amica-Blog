@@ -1,25 +1,33 @@
-import Animal from '../models/Animal.js'; // Importa il modello Animal
-import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/errorTypes.js'; // Importa i tipi di errore personalizzati
-import fs from 'fs/promises'; // Importa il modulo fs per operazioni sui file
-import path from 'path'; // Importa il modulo path per gestire i percorsi dei file
+import Animal from '../models/Animal.js';
+import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/errorTypes.js';
+import fs from 'fs/promises';
+import path from 'path';
 
-// Funzione per creare un nuovo animale
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+
+const addBaseUrlToImage = (animal) => {
+  if (animal.imageUrl) {
+    return {
+      ...animal.toObject(),
+      imageUrl: `${BASE_URL}${animal.imageUrl}`
+    };
+  }
+  return animal.toObject();
+};
+
 export const createAnimal = async (req, res, next) => {
   try {
-    // Estrae i dati dal corpo della richiesta
     const { name, species, breed, age, gender, description, adoptionStatus, medicalHistory } = req.body;
 
-    // Controlla se i campi obbligatori sono presenti
     if (!name || !species) {
-      throw new BadRequestError('Name and species are required'); // Errore se mancano i campi obbligatori
+      throw new BadRequestError('Name and species are required');
     }
 
-    let imageUrl = null; // Inizializza l'URL dell'immagine
+    let imageUrl = null;
     if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`; // Imposta l'URL dell'immagine se presente
+      imageUrl = `/uploads/${req.file.filename}`;
     }
 
-    // Crea un nuovo oggetto Animal
     const newAnimal = new Animal({
       name,
       species,
@@ -32,53 +40,47 @@ export const createAnimal = async (req, res, next) => {
       medicalHistory
     });
 
-    await newAnimal.save(); // Salva il nuovo animale nel database
-    res.status(201).json(newAnimal); // Risponde con il nuovo animale creato
+    await newAnimal.save();
+    res.status(201).json(addBaseUrlToImage(newAnimal));
   } catch (error) {
-    next(error); // Passa l'errore al middleware di gestione degli errori
+    next(error);
   }
 };
 
-// Funzione per ottenere tutti gli animali
 export const getAllAnimals = async (req, res, next) => {
   try {
-    const animals = await Animal.find(); // Trova tutti gli animali nel database
-    res.json(animals); // Risponde con la lista degli animali
+    const animals = await Animal.find();
+    res.json(animals.map(addBaseUrlToImage));
   } catch (error) {
-    next(error); // Passa l'errore al middleware di gestione degli errori
+    next(error);
   }
 };
 
-// Funzione per ottenere un animale per ID
 export const getAnimalById = async (req, res, next) => {
   try {
-    const animal = await Animal.findById(req.params.id); // Trova l'animale per ID
+    const animal = await Animal.findById(req.params.id);
     if (!animal) {
-      throw new NotFoundError('Animal not found'); // Errore se l'animale non esiste
+      throw new NotFoundError('Animal not found');
     }
-    res.json(animal); // Risponde con l'animale trovato
+    res.json(addBaseUrlToImage(animal));
   } catch (error) {
-    next(error); // Passa l'errore al middleware di gestione degli errori
+    next(error);
   }
 };
 
-// Funzione per aggiornare un animale
 export const updateAnimal = async (req, res, next) => {
   try {
-    // Estrae i dati dal corpo della richiesta
     const { name, species, breed, age, gender, description, adoptionStatus, medicalHistory } = req.body;
-    const animal = await Animal.findById(req.params.id); // Trova l'animale per ID
+    const animal = await Animal.findById(req.params.id);
 
     if (!animal) {
-      throw new NotFoundError('Animal not found'); // Errore se l'animale non esiste
+      throw new NotFoundError('Animal not found');
     }
 
-    // Controlla se l'utente ha i permessi per aggiornare
     if (req.user.role !== 'admin') {
-      throw new UnauthorizedError('Not authorized to update animal information'); // Errore se non autorizzato
+      throw new UnauthorizedError('Not authorized to update animal information');
     }
 
-    // Aggiorna i campi dell'animale se forniti
     if (name) animal.name = name;
     if (species) animal.species = species;
     if (breed) animal.breed = breed;
@@ -97,7 +99,7 @@ export const updateAnimal = async (req, res, next) => {
     }
 
     await animal.save();
-    res.json(animal);
+    res.json(addBaseUrlToImage(animal));
   } catch (error) {
     next(error);
   }
@@ -139,7 +141,7 @@ export const searchAnimals = async (req, res, next) => {
     if (adoptionStatus) query.adoptionStatus = adoptionStatus;
 
     const animals = await Animal.find(query);
-    res.json(animals);
+    res.json(animals.map(addBaseUrlToImage));
   } catch (error) {
     next(error);
   }

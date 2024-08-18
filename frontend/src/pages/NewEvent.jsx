@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarPlus, faSpinner, faUpload, faTimes } from '@fortawesome/free-solid-svg-icons';
 import api from '../services/api';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCalendarPlus, faSpinner, faUpload } from '@fortawesome/free-solid-svg-icons';
 
 const NewEvent = () => {
   const [formData, setFormData] = useState({
@@ -14,52 +14,59 @@ const NewEvent = () => {
     capacity: ''
   });
   const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
   const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+    const file = e.target.files[0];
+    if (file) {
       setImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result);
+        setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const removeImage = () => {
-    setImage(null);
-    setPreview(null);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError('');
-    const data = new FormData();
-    Object.keys(formData).forEach(key => {
-      if (key === 'date' || key === 'time') {
-        data.append('date', `${formData.date}T${formData.time}`);
-      } else {
-        data.append(key, formData[key]);
-      }
-    });
-    if (image) {
-      data.append('image', image);
+    setLoading(true);
+
+    if (!formData.title || !formData.description || !formData.date || !formData.time || !formData.location) {
+      setError('Please fill all required fields');
+      setLoading(false);
+      return;
     }
+
+    const formDataToSend = new FormData();
+
+    for (const key in formData) {
+      formDataToSend.append(key, formData[key]);
+    }
+    
+    if (image) {
+      formDataToSend.append('image', image);
+    }
+
     try {
-      const result = await api.createEvent(data);
-      console.log('Evento creato:', result);
-      navigate('/events');
-    } catch (err) {
-      console.error('Errore dettagliato:', err);
-      setError(`Errore durante la creazione dell'evento: ${err.response?.data?.message || err.message}`);
+      const response = await api.createEvent(formDataToSend);
+      console.log('Event created successfully:', response);
+      navigate('/events'); // Redirect to events page after successful creation
+    } catch (error) {
+      console.error('Error creating event:', error);
+      setError('Failed to create event. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -72,42 +79,93 @@ const NewEvent = () => {
           <div className="px-5 py-6">
             <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
               <FontAwesomeIcon icon={faCalendarPlus} className="mr-2 text-purple-500" />
-              Nuovo Evento
+              New Event
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input type="text" name="title" placeholder="Titolo" value={formData.title} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
-              <textarea name="description" placeholder="Descrizione" value={formData.description} onChange={handleChange} rows="3" className="w-full px-3 py-2 border rounded-md" required></textarea>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="Title"
+                className="w-full px-3 py-2 border rounded-md"
+                required
+              />
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Description"
+                rows="3"
+                className="w-full px-3 py-2 border rounded-md"
+                required
+              ></textarea>
               <div className="grid grid-cols-2 gap-4">
-                <input type="date" name="date" value={formData.date} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
-                <input type="time" name="time" value={formData.time} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+                <input
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded-md"
+                  required
+                />
+                <input
+                  type="time"
+                  name="time"
+                  value={formData.time}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded-md"
+                  required
+                />
               </div>
-              <input type="text" name="location" placeholder="Luogo" value={formData.location} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
-              <input type="number" name="capacity" placeholder="Capacità" value={formData.capacity} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Location"
+                className="w-full px-3 py-2 border rounded-md"
+                required
+              />
+              <input
+                type="number"
+                name="capacity"
+                value={formData.capacity}
+                onChange={handleChange}
+                placeholder="Capacity"
+                className="w-full px-3 py-2 border rounded-md"
+              />
               <div className="flex flex-col items-center justify-center w-full">
                 <label htmlFor="image" className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <FontAwesomeIcon icon={faUpload} className="w-8 h-8 mb-2 text-gray-500" />
-                    <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Clicca per caricare</span> o trascina un'immagine</p>
+                    <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
                   </div>
                   <input id="image" type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
                 </label>
-                {preview && (
-                  <div className="mt-4 relative">
-                    <img src={preview} alt="Preview" className="max-w-full h-auto rounded-lg" />
-                    <button 
-                      type="button" 
-                      onClick={removeImage} 
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
-                    >
-                      <FontAwesomeIcon icon={faTimes} />
-                    </button>
+                {imagePreview && (
+                  <div className="mt-4">
+                    <img src={imagePreview} alt="Preview" className="max-w-full h-auto rounded-lg" />
                   </div>
                 )}
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
-              <button type="submit" className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300" disabled={loading}>
-                {loading ? <FontAwesomeIcon icon={faSpinner} spin className="mr-2" /> : <FontAwesomeIcon icon={faCalendarPlus} className="mr-2" />}
-                {loading ? 'Creazione in corso...' : 'Crea Evento'}
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-4 rounded-full hover:from-purple-600 hover:to-pink-600 transition duration-300 flex items-center justify-center"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faCalendarPlus} className="mr-2" />
+                    Create Event
+                  </>
+                )}
               </button>
             </form>
           </div>

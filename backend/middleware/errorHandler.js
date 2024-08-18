@@ -1,27 +1,32 @@
-// middleware/errorHandler.js
+class AppError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+    this.isOperational = true;
 
-import AppError from '../utils/errorTypes.js';
-
-const errorHandler = (err, req, res, next) => {
-  console.error(err);
-
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
-      error: err.name,
-      stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack
-    });
+    Error.captureStackTrace(this, this.constructor);
   }
+}
 
-  // Gestione degli errori non previsti
-  const unknownError = new AppError('An unexpected error occurred', 500);
-  res.status(500).json({
-    status: 'error',
-    message: 'Something went wrong',
-    error: unknownError.name,
-    stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack
-  });
+export const BadRequestError = (message) => new AppError(message, 400);
+export const UnauthorizedError = (message) => new AppError(message || 'Unauthorized access', 401);
+export const ForbiddenError = (message) => new AppError(message || 'Forbidden access', 403);
+export const NotFoundError = (message) => new AppError(message || 'Resource not found', 404);
+export const ConflictError = (message) => new AppError(message, 409);
+export const ValidationError = (message) => new AppError(message, 422);
+export const InternalServerError = (message) => new AppError(message || 'Internal server error', 500);
+
+export const DatabaseError = (message) => {
+  const error = new AppError(message || 'Database operation failed', 500);
+  error.name = 'DatabaseError';
+  return error;
 };
 
-export default errorHandler;
+export const NetworkError = (message) => {
+  const error = new AppError(message || 'Network operation failed', 500);
+  error.name = 'NetworkError';
+  return error;
+};
+
+export default AppError;

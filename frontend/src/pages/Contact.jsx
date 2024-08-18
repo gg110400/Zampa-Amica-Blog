@@ -1,29 +1,50 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faPhone, faMapMarkerAlt, faPaperPlane, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faPhone, faMapMarkerAlt, faPaperPlane, faHeart, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { faFacebookF, faTwitter, faInstagram, faLinkedinIn } from '@fortawesome/free-brands-svg-icons';
 
 const Contact = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert('Messaggio inviato!');
+    setSubmitted(true);
   };
 
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-100 via-pink-100 to-orange-100 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-3xl shadow-2xl text-center">
+          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FontAwesomeIcon icon={faCheck} className="text-5xl text-green-500" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Grazie per averci contattato</h2>
+          <p className="text-xl text-gray-600 mb-8">Il tuo messaggio è stato inviato con successo. Ti risponderemo il prima possibile!</p>
+          <button
+            onClick={() => setSubmitted(false)}
+            className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-lg font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 hover:from-red-600 hover:to-pink-600"
+          >
+            Torna al form di contatto
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-orange-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-10">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl w-full mx-auto">
+        <div className="text-center mb-10 ">
           <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 mb-3">
             Contattaci
           </h2>
           <p className="text-lg text-gray-600">Siamo qui per aiutarti. Mandaci un messaggio!</p>
         </div>
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="flex flex-col md:flex-row">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden ">
+          <div className="flex flex-col md:flex-row ">
             <div className="md:w-1/2 p-8">
               <h3 className="text-2xl font-bold mb-6 text-gray-800">Scrivici un messaggio</h3>
               <form onSubmit={handleSubmit} className="space-y-5">

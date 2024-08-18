@@ -261,7 +261,7 @@ export const getAllEvents = async () => {
     const response = await axios.get(`${BASE_URL}/events`);
     return response.data;
   } catch (error) {
-    console.error('Errore nel recuperare tutti gli eventi:', error);
+    console.error('Error fetching all events:', error);
     throw error;
   }
 };
@@ -271,7 +271,7 @@ export const getEventById = async (id) => {
     const response = await axios.get(`${BASE_URL}/events/${id}`);
     return response.data;
   } catch (error) {
-    console.error(`Errore nel recuperare l'evento con ID ${id}:`, error);
+    console.error(`Error fetching event with ID ${id}:`, error);
     throw error;
   }
 };
@@ -286,7 +286,7 @@ export const createEvent = async (eventData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Errore nella creazione dell\'evento:', error);
+    console.error('Error creating event:', error);
     throw error;
   }
 };
@@ -301,7 +301,7 @@ export const updateEvent = async (id, eventData) => {
     });
     return response.data;
   } catch (error) {
-    console.error(`Errore nell'aggiornamento dell'evento con ID ${id}:`, error);
+    console.error(`Error updating event with ID ${id}:`, error);
     throw error;
   }
 };
@@ -313,22 +313,11 @@ export const deleteEvent = async (id) => {
     });
     return response.data;
   } catch (error) {
-    console.error(`Errore nell'eliminazione dell'evento con ID ${id}:`, error);
+    console.error(`Error deleting event with ID ${id}:`, error);
     throw error;
   }
 };
 
-export const registerForEvent = async (eventId) => {
-  try {
-    const response = await axios.post(`${BASE_URL}/events/${eventId}/register`, null, {
-      headers: getAuthHeader()
-    });
-    return response.data;
-  } catch (error) {
-    console.error(`Errore nella registrazione all'evento con ID ${eventId}:`, error);
-    throw error;
-  }
-};
 
 const api = {
   registerUser,
@@ -355,8 +344,7 @@ const api = {
   getEventById,
   createEvent,
   updateEvent,
-  deleteEvent,
-  registerForEvent
+  deleteEvent
 };
 
 export default api;

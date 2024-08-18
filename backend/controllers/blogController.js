@@ -20,6 +20,7 @@ export const createPost = async (req, res, next) => {
     let imageUrl = null;
     if (req.file) {
       imageUrl = `/uploads/${req.file.filename}`;
+      console.log('Image URL:', imageUrl);
     }
 
     const newPost = new BlogPost({
@@ -47,7 +48,16 @@ export const createPost = async (req, res, next) => {
 export const getAllPosts = async (req, res, next) => {
   try {
     const posts = await BlogPost.find().populate('author', 'name');
-    res.json(posts);
+    const postsWithFullImageUrl = posts.map(post => {
+      if (post.imageUrl) {
+        return {
+          ...post.toObject(),
+          imageUrl: `${req.protocol}://${req.get('host')}${post.imageUrl}`
+        };
+      }
+      return post;
+    });
+    res.json(postsWithFullImageUrl);
   } catch (error) {
     console.error('Error in getAllPosts:', error);
     next(error);
@@ -59,6 +69,9 @@ export const getPostById = async (req, res, next) => {
     const post = await BlogPost.findById(req.params.id).populate('author', 'name');
     if (!post) {
       throw new NotFoundError('Post not found');
+    }
+    if (post.imageUrl) {
+      post.imageUrl = `${req.protocol}://${req.get('host')}${post.imageUrl}`;
     }
     res.json(post);
   } catch (error) {
@@ -93,6 +106,11 @@ export const updatePost = async (req, res, next) => {
     }
 
     await post.save();
+    
+    if (post.imageUrl) {
+      post.imageUrl = `${req.protocol}://${req.get('host')}${post.imageUrl}`;
+    }
+    
     res.json(post);
   } catch (error) {
     console.error('Error in updatePost:', error);
