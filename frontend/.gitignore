@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.env  // Aggiunto per escludere il file di configurazione dell'ambiente
 
 # Editor directories and files
 .vscode/*
